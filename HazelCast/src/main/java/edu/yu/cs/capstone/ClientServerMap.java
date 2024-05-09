@@ -1,0 +1,22 @@
+package edu.yu.cs.capstone;
+
+import com.hazelcast.config.Config;
+import com.hazelcast.config.InMemoryFormat;
+import com.hazelcast.config.NearCacheConfig;
+import com.hazelcast.core.Hazelcast;
+
+public class ClientServerMap {
+    public static void main(String[] args) {
+        NearCacheConfig nearCacheConfig = new NearCacheConfig()
+            .setInMemoryFormat(InMemoryFormat.BINARY)
+            .setInvalidateOnChange(true);
+    
+        Config config = new Config();
+        config.setClusterName(System.getenv("HAZELCAST_CLUSTER_NAME"))
+            //?Probably not necessary
+            .setInstanceName("instance1")
+            .getMapConfig("clients")
+            .setNearCacheConfig(nearCacheConfig);
+        Hazelcast.newHazelcastInstance(config);
+    }
+}

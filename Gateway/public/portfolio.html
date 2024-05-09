@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portfolio</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        #stock-table th:nth-child(1),
+        #stock-table td:nth-child(1),
+        #stock-table th:nth-child(2),
+        #stock-table td:nth-child(2) {
+            width: 10%;
+        }
+
+        #stock-table th:nth-child(3),
+        #stock-table td:nth-child(3),
+        #stock-table th:nth-child(4),
+        #stock-table td:nth-child(4) {
+            width: 40%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Client Portfolio</h1>
+    
+        <table id="stock-table">
+            <thead>
+                <tr>
+                    <th>Stock Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Market Value</th>
+                </tr>
+            </thead>
+            <tbody id="stock-data">
+                <!-- Stock data will be populated here -->
+            </tbody>
+        </table>
+        <script src="client.js"></script>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const blotterUrl = urlParams.get("blotter");
+            const clientId = urlParams.get("clientId")
+            openBlotter(blotterUrl, clientId);
+        </script>
+</body>
+</html>
