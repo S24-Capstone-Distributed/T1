@@ -1,3 +1,5 @@
+import { Kafka } from "kafkajs";
+import EventManager from './EventManager.js';
 const express = require('express');
 const { Client } = require('hazelcast-client');
 const cors = require('cors');
@@ -10,6 +12,21 @@ const PORT = parseInt(process.env.port);
 //TODO REMOVE
 const servers = [`${localUrl}:8010`]; //, `http://${localUrl}:8020`, `http://${localUrl}:8030`];
 let currentServerIndex = -1;
+
+const POOL_ID = "GATEWAY";
+const kafka = new Kafka({
+  clientId: POOL_ID,
+  brokers: [process.env.KAFKA_URL],
+});
+const producer = kafka.producer();
+await producer.connect();
+const observability = new EventManager(producer, PORT);
+const GATEWAY_CONNECTIONS_ID = 617;
+setInterval(() => {
+  observability.send1SecondCPUUsage(POOL_ID);
+  observability.sendMemoryUsage(POOL_ID);
+}, 1000);
+
 
 let clientMap;
 
@@ -29,6 +46,7 @@ connectToHazelCast().catch(err => {
 
 app.post('/portfolio.html', async(req, res) => {
     const clientId = req.body;
+    observability.sendEvent(POOL_ID, GATEWAY_CONNECTIONS_ID, clientId, 1);
     retrieveBlotterServer(clientId, res);
 })
 

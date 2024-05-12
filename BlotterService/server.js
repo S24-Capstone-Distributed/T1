@@ -1,3 +1,5 @@
+import { Kafka } from "kafkajs";
+import EventManager from './EventManager.js';
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -30,6 +32,20 @@ const hazelcastValue = `${clientUrl}|${HOSTNAME}:${TCP_PORT}`
 const priceUpdateMap = new Map();
 const holdingUpdateMap = new Map();
 const portfolios = connectToMongoCollection();
+
+const POOL_ID = "BLOTTER";
+const kafka = new Kafka({
+  clientId: POOL_ID,
+  brokers: [process.env.KAFKA_URL],
+});
+const producer = kafka.producer();
+await producer.connect();
+const observability = new EventManager(producer, HTTP_PORT);
+const SSE_COUNT_ID = 847;
+setInterval(() => {
+  observability.send1SecondCPUUsage(POOL_ID);
+  observability.sendMemoryUsage(POOL_ID);
+}, 1000);
 
 // Configure a TCP server to listen for CDRS connections
 const tcpServer = net.createServer({ keepAlive: true }, (socket) => {
@@ -157,9 +173,10 @@ async function connectToHazelCast() {
 async function handleEvent(data) {
   const key = data.clientId + data.ticker;
   const prevPriceUpdate = priceUpdateMap.get(key);
-  const prevHoldingUpdate = priceUpdateMap.get(key);
+  const prevHoldingUpdate = holdingUpdateMap.get(key);
   if(!prevPriceUpdate || prevPriceUpdate > data.priceLastUpdated || prevHoldingUpdate > data.holdingLastUpdated){
     eventEmitter.emit(data.clientId, data);
+    observability.sendEvent(POOL_ID, SSE_COUNT_ID, data.clientId, 1);
     priceUpdateMap.set(key, data.priceLastUpdated);
     holdingUpdateMap.set(key, data.holdingLastUpdated);
   }

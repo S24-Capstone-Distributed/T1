@@ -54,6 +54,7 @@ services:
       - MONGO_COLLECTION=marketValue
       - HOSTNAME=blotterservice
       - EXTERNAL_HOST=localhost
+      - KAFKA_URL=localhost:9092 # this will be changed
     depends_on:
       #- kafka
       - hazelcast
@@ -91,6 +92,7 @@ services:
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
       - HAZELCAST_SERVERS=hazelcast:5701
       - CLIENT_CONNECTIONS_MAP=clients
+      - KAFKA_URL=localhost:9092 # this will be changed
     expose:
       - 6010:6010
     depends_on:
@@ -107,6 +109,7 @@ services:
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
       - HAZELCAST_SERVERS=hazelcast:5701
       - CLIENT_CONNECTIONS_MAP=clients
+      - KAFKA_URL=localhost:9092 # this will be changed
     depends_on:
       - hazelcast
     expose:
