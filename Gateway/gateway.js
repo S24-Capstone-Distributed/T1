@@ -46,13 +46,14 @@ connectToHazelCast().catch(err => {
 
 app.post('/portfolio.html', async(req, res) => {
     const clientId = req.body;
-    observability.sendEvent(POOL_ID, GATEWAY_CONNECTIONS_ID, clientId, 1);
+    //observability.sendEvent(POOL_ID, GATEWAY_CONNECTIONS_ID, clientId, 1);
     retrieveBlotterServer(clientId, res);
 })
 
 app.post('/reconnect', async(req, res) => {
     const clientId = req.body;
-    observability.sendEvent(POOL_ID, RECONNECTED_CLIENTS_ID, clientId, 1);
+    //observability.sendEvent(POOL_ID, RECONNECTED_CLIENTS_ID, clientId, 1);
+    console.log('RECONNECT CALLED')
     retrieveBlotterServer(clientId, res);
 });
 

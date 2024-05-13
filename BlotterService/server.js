@@ -117,7 +117,7 @@ app.get("/blotter/:clientId", (req, res) => {
     }
   };
   eventEmitter.on(clientId, eventListener);
-  connectedClients++;
+  //connectedClients++;
   // retrievePortfolioFromMongo(clientId).then((portfolio) => {
   //   portfolio.forEach((row) => {
   //     lock.acquire(row.clientId + row.ticker, () => {
@@ -134,7 +134,7 @@ app.get("/blotter/:clientId", (req, res) => {
   
   req.on("close", () => {
     console.info("Connection to client closed");
-    connectedClients--;
+    //connectedClients--;
     eventEmitter.removeListener(clientId, eventListener);
     res.end();
   });
@@ -146,13 +146,13 @@ app.listen(HTTP_PORT, () => {
 });
 
 
-function connectToMongoCollection() {
-  const client = new MongoClient(process.env.MONGO_CONNECTION);
-  client.connect();
-  const db = client.db(process.env.MONGO_DB_NAME);
-  console.log("Connected to Mongo!");
-  return db.collection(process.env.MONGO_COLLECTION);
-}
+// function connectToMongoCollection() {
+//   const client = new MongoClient(process.env.MONGO_CONNECTION);
+//   client.connect();
+//   const db = client.db(process.env.MONGO_DB_NAME);
+//   console.log("Connected to Mongo!");
+//   return db.collection(process.env.MONGO_COLLECTION);
+// }
 
 async function retrievePortfolioFromMongo(clientId) {
   const query = { clientId: clientId };
@@ -178,7 +178,7 @@ async function connectToHazelCast() {
 
 async function handleEvent(data) {
   eventEmitter.emit(data.clientId, data);
-  observability.sendEvent(POOL_ID, SSE_COUNT_ID, data.clientId, 1);
+  //observability.sendEvent(POOL_ID, SSE_COUNT_ID, data.clientId, 1);
 }
 
 async function sendEvent(res, dataMessageObj) {

@@ -20,7 +20,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://192.168.144:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://192.168.8.144:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -52,7 +52,7 @@ services:
       - MONGO_DB_NAME=tradeServer
       - MONGO_COLLECTION=marketValue
       - HOSTNAME=blotterservice
-      - EXTERNAL_HOST=localhost
+      - EXTERNAL_HOST=192.168.8.144 #Refer to infrastructure machine
       - KAFKA_URL=localhost:9092 # this will be changed
     depends_on:
       #- kafka
@@ -62,7 +62,7 @@ services:
     ports:
       - 8010:8010
     expose:
-      - 8012:8012
+      - 8012
     restart: always
 
   blotterservice2:
@@ -77,7 +77,7 @@ services:
       - MONGO_DB_NAME=client-portfolios
       - MONGO_COLLECTION=market_value
       - HOSTNAME=blotterservice2
-      - EXTERNAL_HOST=localhost
+      - EXTERNAL_HOST=192.168.8.144
     depends_on:
       # - kafka
       - hazelcast
@@ -101,7 +101,7 @@ services:
       - MONGO_DB_NAME=client-portfolios
       - MONGO_COLLECTION=market_value
       - HOSTNAME=blotterservice3
-      - EXTERNAL_HOST=localhost
+      - EXTERNAL_HOST=192.168.8.144
     depends_on:
       # - kafka
       - hazelcast
@@ -125,7 +125,7 @@ services:
       - MONGO_DB_NAME=client-portfolios
       - MONGO_COLLECTION=market_value
       - HOSTNAME=blotterservice4
-      - EXTERNAL_HOST=localhost
+      - EXTERNAL_HOST=192.168.8.144
     depends_on:
       # - kafka
       - hazelcast
@@ -149,7 +149,7 @@ services:
       - MONGO_DB_NAME=client-portfolios
       - MONGO_COLLECTION=market_value
       - HOSTNAME=blotterservice5
-      - EXTERNAL_HOST=localhost
+      - EXTERNAL_HOST=192.168.8.144
     depends_on:
       # - kafka
       - hazelcast

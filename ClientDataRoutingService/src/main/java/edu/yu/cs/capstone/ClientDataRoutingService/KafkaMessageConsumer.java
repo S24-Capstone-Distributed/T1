@@ -50,9 +50,10 @@ public class KafkaMessageConsumer {
                     this.pool.execute(() -> {
                         DataMessage message = this.gson.fromJson(record.value(), DataMessage.class);
                         send(record.key().split("_")[0], message);
+                        System.out.println(message);
                     });
                 });
-                System.out.println("Sent " + records.count() + "records");
+                System.out.println("Sent " + records.count() + " records");
                 this.messagesSent += records.count();
                 System.out.println("Total messages: " + this.messagesSent);
                 Thread.sleep(200);
