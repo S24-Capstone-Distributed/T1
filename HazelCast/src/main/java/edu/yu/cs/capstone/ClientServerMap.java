@@ -2,11 +2,13 @@ package edu.yu.cs.capstone;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.InMemoryFormat;
+import com.hazelcast.config.ListenerConfig;
 import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.core.Hazelcast;
 
 public class ClientServerMap {
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         NearCacheConfig nearCacheConfig = new NearCacheConfig()
             .setInMemoryFormat(InMemoryFormat.BINARY)
             .setInvalidateOnChange(true);
@@ -17,6 +19,7 @@ public class ClientServerMap {
             .setInstanceName("instance1")
             .getMapConfig("clients")
             .setNearCacheConfig(nearCacheConfig);
+        config.addListenerConfig(new ListenerConfig(new BlotterServiceListener()));
         Hazelcast.newHazelcastInstance(config);
     }
 }

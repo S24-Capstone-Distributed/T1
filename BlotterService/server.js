@@ -1,5 +1,5 @@
-import { Kafka } from "kafkajs";
-import EventManager from './EventManager.js';
+//import { Kafka } from "kafkajs";
+//import EventManager from './EventManager.js';
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -29,30 +29,30 @@ const hazelcastValue = `${clientUrl}|${HOSTNAME}:${TCP_PORT}`;
 const portfolios = connectToMongoCollection();
 
 //Metrics setup
-const POOL_ID = "BLOTTER";
-const kafka = new Kafka({
-  clientId: POOL_ID,
-  brokers: [process.env.KAFKA_URL],
-});
-const producer = kafka.producer();
-await producer.connect();
-const observability = new EventManager(producer, HTTP_PORT);
-const SSE_COUNT_ID = 847;
-const CONNECTED_CLIENTS_ID = 848;
-const MESSAGE_THROUHGPUT_ID = 849;
-let connectedClients = 0;
-let messageThroughput = 0;
-//Per second
-setInterval(() => {
-  observability.send1SecondCPUUsage(POOL_ID);
-  observability.sendMemoryUsage(POOL_ID);
-}, 1000);
-//Per minute
-setInterval(() => {
-  observability.sendEvent(POOL_ID, CONNECTED_CLIENTS_ID, "connected_users_per_minute", connectedClients);
-  observability.sendEvent(POOL_ID, MESSAGE_THROUHGPUT_ID, "CDRS_messages_per_minute", messageThroughput);
-  messageThroughput = 0;
-}, 60000);
+// const POOL_ID = "BLOTTER";
+// const kafka = new Kafka({
+//   clientId: POOL_ID,
+//   brokers: [process.env.KAFKA_URL],
+// });
+// const producer = kafka.producer();
+// await producer.connect();
+// const observability = new EventManager(producer, HTTP_PORT);
+// const SSE_COUNT_ID = 847;
+// const CONNECTED_CLIENTS_ID = 848;
+// const MESSAGE_THROUHGPUT_ID = 849;
+// let connectedClients = 0;
+// let messageThroughput = 0;
+// //Per second
+// setInterval(() => {
+//   observability.send1SecondCPUUsage(POOL_ID);
+//   observability.sendMemoryUsage(POOL_ID);
+// }, 1000);
+// //Per minute
+// setInterval(() => {
+//   observability.sendEvent(POOL_ID, CONNECTED_CLIENTS_ID, "connected_users_per_minute", connectedClients);
+//   observability.sendEvent(POOL_ID, MESSAGE_THROUHGPUT_ID, "CDRS_messages_per_minute", messageThroughput);
+//   messageThroughput = 0;
+// }, 60000);
 
 // Configure a TCP server to listen for CDRS connections
 const tcpServer = net.createServer({ keepAlive: true }, (socket) => {

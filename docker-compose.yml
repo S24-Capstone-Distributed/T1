@@ -240,17 +240,17 @@ services:
   #     - trade-server-network
 
 
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - 8080:8080
-    environment:
-      DYNAMIC_CONFIG_ENABLED: 'true'
-    # volumes:
-    #   - .\config.yml:/etc/kafkaui/dynamic_config.yaml
-    networks:
-      - trade-server-network
+  # kafka-ui:
+  #   container_name: kafka-ui
+  #   image: provectuslabs/kafka-ui:latest
+  #   ports:
+  #     - 8080:8080
+  #   environment:
+  #     DYNAMIC_CONFIG_ENABLED: 'true'
+  #   # volumes:
+  #   #   - .\config.yml:/etc/kafkaui/dynamic_config.yaml
+  #   networks:
+  #     - trade-server-network
   
 networks:
   trade-server-network:

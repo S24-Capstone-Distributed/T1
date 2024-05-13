@@ -1,5 +1,5 @@
-import { Kafka } from "kafkajs";
-import EventManager from './EventManager.js';
+//import { Kafka } from "kafkajs";
+//import EventManager from './EventManager.js';
 const express = require('express');
 const { Client } = require('hazelcast-client');
 const cors = require('cors');
@@ -14,20 +14,20 @@ let currentServerIndex = -1;
 
 
 //Observability setup
-const POOL_ID = "GATEWAY";
-const kafka = new Kafka({
-  clientId: POOL_ID,
-  brokers: [process.env.KAFKA_URL],
-});
-const producer = kafka.producer();
-await producer.connect();
-const observability = new EventManager(producer, PORT);
-const GATEWAY_CONNECTIONS_ID = 617;
-const RECONNECTED_CLIENTS_ID = 618;
-setInterval(() => {
-  observability.send1SecondCPUUsage(POOL_ID);
-  observability.sendMemoryUsage(POOL_ID);
-}, 1000);
+// const POOL_ID = "GATEWAY";
+// const kafka = new Kafka({
+//   clientId: POOL_ID,
+//   brokers: [process.env.KAFKA_URL],
+// });
+// const producer = kafka.producer();
+// await producer.connect();
+// const observability = new EventManager(producer, PORT);
+// const GATEWAY_CONNECTIONS_ID = 617;
+// const RECONNECTED_CLIENTS_ID = 618;
+// setInterval(() => {
+//   observability.send1SecondCPUUsage(POOL_ID);
+//   observability.sendMemoryUsage(POOL_ID);
+// }, 1000);
 
 
 app.use(cors());
