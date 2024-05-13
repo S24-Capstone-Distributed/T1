@@ -80,8 +80,8 @@ async function connectToHazelCast() {
     clientMap = await hz.getMap(process.env.CLIENT_CONNECTIONS_MAP);
     blotterServers = await hz.getSet("availableServers");
     await blotterServers.addItemListener(itemListener, true)
-    const size = await blotterServers.size();
-    console.log(`Available Servers: ${size}`);
+    const items = await blotterServers.toArray();
+    servers.push(...items);
 }
 
 // Return a blotterService url to the client

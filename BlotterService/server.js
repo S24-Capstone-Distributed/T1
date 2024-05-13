@@ -26,7 +26,7 @@ const HTTP_PORT = parseInt(process.env.HTTP_PORT);
 const TCP_PORT = parseInt(process.env.TCP_PORT);
 const clientUrl = `${EXTERNAL_HOST}:${HTTP_PORT}`;
 const hazelcastValue = `${clientUrl}|${HOSTNAME}:${TCP_PORT}`;
-const portfolios = connectToMongoCollection();
+//const portfolios = connectToMongoCollection();
 
 //Metrics setup
 // const POOL_ID = "BLOTTER";
@@ -146,23 +146,23 @@ app.listen(HTTP_PORT, () => {
 });
 
 
-function connectToMongoCollection() {
-  const client = new MongoClient(process.env.MONGO_CONNECTION);
-  client.connect();
-  const db = client.db(process.env.MONGO_DB_NAME);
-  console.log("Connected to Mongo!");
-  return db.collection(process.env.MONGO_COLLECTION);
-}
+// function connectToMongoCollection() {
+//   const client = new MongoClient(process.env.MONGO_CONNECTION);
+//   client.connect();
+//   const db = client.db(process.env.MONGO_DB_NAME);
+//   console.log("Connected to Mongo!");
+//   return db.collection(process.env.MONGO_COLLECTION);
+// }
 
-async function retrievePortfolioFromMongo(clientId) {
-  const query = { clientId: clientId };
-  const options = {
-    projection: { _id: 0, clientId: 1, ticker: 1, quantity: 1, price: 1, market_value: 1, price_last_updated: 1, holding_last_updated: 1 },
-  };
-  const portfolio = await portfolios.find(query, options).toArray();
-  console.log(`Retrieved ${portfolio}`);
-  return portfolio;
-}
+// async function retrievePortfolioFromMongo(clientId) {
+//   const query = { clientId: clientId };
+//   const options = {
+//     projection: { _id: 0, clientId: 1, ticker: 1, quantity: 1, price: 1, market_value: 1, price_last_updated: 1, holding_last_updated: 1 },
+//   };
+//   const portfolio = await portfolios.find(query, options).toArray();
+//   console.log(`Retrieved ${portfolio}`);
+//   return portfolio;
+// }
 
 async function connectToHazelCast() {
   const hz = await Client.newHazelcastClient({
