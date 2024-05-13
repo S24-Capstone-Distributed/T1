@@ -1,33 +1,32 @@
-const { Kafka } = require("kafkajs");
-//import EventManager from './EventManager.js';
-const express = require('express');
-const { Client } = require('hazelcast-client');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const app = express();
-const localUrl = process.env.localUrl;
+import EventManager from './EventManager.js';
+import  { Kafka } from "kafkajs"
+import  express from 'express'
+import  { Client } from 'hazelcast-client'
+import  cors from 'cors'
+import  bodyParser from 'body-parser'
+const  app = express();
 const PORT = parseInt(process.env.port);
+let blotterServers;
 let clientMap;
-//TODO REMOVE
-const servers = []; //, `http://${localUrl}:8020`, `http://${localUrl}:8030`];
+const servers = []; 
 let currentServerIndex = -1;
 
 
 //Observability setup
-// const POOL_ID = "GATEWAY";
-// const kafka = new Kafka({
-//   clientId: POOL_ID,
-//   brokers: [process.env.KAFKA_URL],
-// });
-// const producer = kafka.producer();
-// await producer.connect();
-// const observability = new EventManager(producer, PORT);
-// const GATEWAY_CONNECTIONS_ID = 617;
-// const RECONNECTED_CLIENTS_ID = 618;
-// setInterval(() => {
-//   observability.send1SecondCPUUsage(POOL_ID);
-//   observability.sendMemoryUsage(POOL_ID);
-// }, 1000);
+const POOL_ID = "GATEWAY";
+const kafka = new Kafka({
+  clientId: POOL_ID,
+  brokers: [process.env.GRAFANA_URL],
+});
+const producer = kafka.producer();
+await producer.connect();
+const observability = new EventManager(producer, PORT);
+const GATEWAY_CONNECTIONS_ID = 617;
+const RECONNECTED_CLIENTS_ID = 618;
+setInterval(() => {
+  observability.send1SecondCPUUsage(POOL_ID);
+  observability.sendMemoryUsage(POOL_ID);
+}, 1000);
 
 
 app.use(cors());
@@ -46,13 +45,13 @@ connectToHazelCast().catch(err => {
 
 app.post('/portfolio.html', async(req, res) => {
     const clientId = req.body;
-    //observability.sendEvent(POOL_ID, GATEWAY_CONNECTIONS_ID, clientId, 1);
+    observability.sendEvent(POOL_ID, GATEWAY_CONNECTIONS_ID, clientId, 1);
     retrieveBlotterServer(clientId, res);
 })
 
 app.post('/reconnect', async(req, res) => {
     const clientId = req.body;
-    //observability.sendEvent(POOL_ID, RECONNECTED_CLIENTS_ID, clientId, 1);
+    observability.sendEvent(POOL_ID, RECONNECTED_CLIENTS_ID, clientId, 1);
     console.log('RECONNECT CALLED')
     retrieveBlotterServer(clientId, res);
 });

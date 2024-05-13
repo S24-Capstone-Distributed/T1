@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "API Gateway for BlotterService",
   "main": "gateway.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node gateway.js"

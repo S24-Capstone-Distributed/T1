@@ -1,14 +1,17 @@
-const { Kafka } = require("kafkajs");
-//import EventManager from './EventManager.js';
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const { EventEmitter } = require("events");
-const net = require("net");
-const { Client } = require('hazelcast-client');
-const JSONStream = require("JSONStream");
-const AsyncLock = require("async-lock");
-const MongoClient = require("mongodb").MongoClient;
+import  EventManager from "./EventManager.js";
+import { Kafka } from "kafkajs"
+import express from "express"
+import bodyParser from "body-parser"
+import cors from "cors"
+import { EventEmitter } from "events"
+import net from "net"
+import { Client } from 'hazelcast-client'
+import JSONStream from "JSONStream"
+import AsyncLock from "async-lock"
+import mongo from "mongodb"
+
+const MongoClient = mongo.MongoClient
+
 
 const lock = new AsyncLock();
 const app = express();
@@ -27,32 +30,34 @@ const TCP_PORT = parseInt(process.env.TCP_PORT);
 const clientUrl = `${EXTERNAL_HOST}:${HTTP_PORT}`;
 const hazelcastValue = `${clientUrl}|${HOSTNAME}:${TCP_PORT}`;
 
-//const portfolios = connectToMongoCollection();
+const portfolios = connectToMongoCollection();
 //Metrics setup
-// const POOL_ID = "BLOTTER";
-// const kafka = new Kafka({
-//   clientId: POOL_ID,
-//   brokers: [process.env.KAFKA_URL],
-// });
-// const producer = kafka.producer();
-// await producer.connect();
-// const observability = new EventManager(producer, HTTP_PORT);
-// const SSE_COUNT_ID = 847;
-// const CONNECTED_CLIENTS_ID = 848;
-// const MESSAGE_THROUHGPUT_ID = 849;
-// let connectedClients = 0;
-// let messageThroughput = 0;
-// //Per second
-// setInterval(() => {
-//   observability.send1SecondCPUUsage(POOL_ID);
-//   observability.sendMemoryUsage(POOL_ID);
-// }, 1000);
-// //Per minute
-// setInterval(() => {
-//   observability.sendEvent(POOL_ID, CONNECTED_CLIENTS_ID, "connected_users_per_minute", connectedClients);
-//   observability.sendEvent(POOL_ID, MESSAGE_THROUHGPUT_ID, "CDRS_messages_per_minute", messageThroughput);
-//   messageThroughput = 0;
-// }, 60000);
+const POOL_ID = "BLOTTER";
+const kafka = new Kafka({
+  clientId: POOL_ID,
+  brokers: [process.env.GRAFANA_URL],
+});
+
+let producer;
+connectToGrafana();
+
+const observability = new EventManager(producer, HTTP_PORT);
+const SSE_COUNT_ID = 847;
+const CONNECTED_CLIENTS_ID = 848;
+const MESSAGE_THROUHGPUT_ID = 849;
+let connectedClients = 0;
+let messageThroughput = 0;
+//Per second
+setInterval(() => {
+  observability.send1SecondCPUUsage(POOL_ID);
+  observability.sendMemoryUsage(POOL_ID);
+}, 1000);
+//Per minute
+setInterval(() => {
+  observability.sendEvent(POOL_ID, CONNECTED_CLIENTS_ID, "connected_users_per_minute", connectedClients);
+  observability.sendEvent(POOL_ID, MESSAGE_THROUHGPUT_ID, "CDRS_messages_per_minute", messageThroughput);
+  messageThroughput = 0;
+}, 60000);
 
 // Configure a TCP server to listen for CDRS connections
 const tcpServer = net.createServer({ keepAlive: true }, (socket) => {
@@ -117,24 +122,24 @@ app.get("/blotter/:clientId", (req, res) => {
     }
   };
   eventEmitter.on(clientId, eventListener);
-  //connectedClients++;
-  // retrievePortfolioFromMongo(clientId).then((portfolio) => {
-  //   portfolio.forEach((row) => {
-  //     lock.acquire(row.clientId + row.ticker, () => {
-  //       if (!sentTickersSet.has(row.clientId + row.ticker)) {
-  //         sendEvent(res, row);
-  //       }
-  //     });
-  //   });
-  //   processedHistoricalData = true;
-  //   console.info("Completed portfolio retrieval");
-  // }).catch(error => {
-  //   console.error("Portfolio retrieval from Mongo failed: ", error);
-  // });
+  connectedClients++;
+  retrievePortfolioFromMongo(clientId).then((portfolio) => {
+    portfolio.forEach((row) => {
+      lock.acquire(row.clientId + row.ticker, () => {
+        if (!sentTickersSet.has(row.clientId + row.ticker)) {
+          sendEvent(res, row);
+        }
+      });
+    });
+    processedHistoricalData = true;
+    console.info("Completed portfolio retrieval");
+  }).catch(error => {
+    console.error("Portfolio retrieval from Mongo failed: ", error);
+  });
   
   req.on("close", () => {
     console.info("Connection to client closed");
-    //connectedClients--;
+    connectedClients--;
     eventEmitter.removeListener(clientId, eventListener);
     res.end();
   });
@@ -146,13 +151,13 @@ app.listen(HTTP_PORT, () => {
 });
 
 
-// function connectToMongoCollection() {
-//   const client = new MongoClient(process.env.MONGO_CONNECTION);
-//   client.connect();
-//   const db = client.db(process.env.MONGO_DB_NAME);
-//   console.log("Connected to Mongo!");
-//   return db.collection(process.env.MONGO_COLLECTION);
-// }
+function connectToMongoCollection() {
+  const client = new MongoClient(process.env.MONGO_CONNECTION);
+  client.connect();
+  const db = client.db(process.env.MONGO_DB_NAME);
+  console.log("Connected to Mongo!");
+  return db.collection(process.env.MONGO_COLLECTION);
+}
 
 async function retrievePortfolioFromMongo(clientId) {
   const query = { clientId: clientId };
@@ -178,9 +183,15 @@ async function connectToHazelCast() {
 
 async function handleEvent(data) {
   eventEmitter.emit(data.clientId, data);
-  //observability.sendEvent(POOL_ID, SSE_COUNT_ID, data.clientId, 1);
+  observability.sendEvent(POOL_ID, SSE_COUNT_ID, data.clientId, 1);
 }
 
 async function sendEvent(res, dataMessageObj) {
   res.write(`data: ${JSON.stringify(dataMessageObj)}\n\n`);
+}
+
+async function connectToGrafana()
+{
+  const producer = kafka.producer();
+  await producer.connect();
 }

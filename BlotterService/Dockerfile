@@ -3,6 +3,8 @@ FROM node:latest
 WORKDIR /app/blotterService
 
 COPY package*.json ./
+COPY EventManager.js ./
+COPY osutils.js ./
 
 RUN npm i
 

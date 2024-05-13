@@ -3,6 +3,8 @@ FROM node:latest
 WORKDIR /app/apiGateway
 
 COPY package*.json ./
+COPY EventManager.js ./
+COPY osutils.js ./
 
 COPY ./public/ ./public/
 

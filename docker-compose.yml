@@ -1,32 +1,23 @@
 ---
-version: '3.8'
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - trade-server-network
-
-  kafka:
-    #image: ghcr.io/s24-capstone-distributed/tradeserverkafka:latest
-    image: confluentinc/cp-kafka:latest
-    depends_on:
-      - zookeeper
-    ports:
-      - 9092:9092
-    environment:
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://192.168.8.144:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CREATE_TOPICS: "MarketValueTopic:1:1"
-    networks:
-      - trade-server-network
+  # kafka:
+  #   #image: ghcr.io/s24-capstone-distributed/tradeserverkafka:latest
+  #   image: confluentinc/cp-kafka:latest
+  #   depends_on:
+  #     - zookeeper
+  #   ports:
+  #     - 9092:9092
+  #   environment:
+  #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://192.168.8.144:9092
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #     KAFKA_CREATE_TOPICS: "MarketValueTopic:1:1"
+  #   networks:
+  #     - trade-server-network
 
   hazelcast:
     build: ./HazelCast
@@ -38,22 +29,20 @@ services:
     networks:
       - trade-server-network
     
-  blotterservice:
+  blotterservice1:
     build: ./BlotterService
-    #image: ghcr.io/s24-capstone-distributed/blotterservice:latest
     environment:
       - HTTP_PORT=8010
       - TCP_PORT=8012
       - CLIENT_CONNECTIONS_MAP=clients
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
-      #- HAZELCAST_SERVERS=hazelcast:5701,hazelcast:5702
       - HAZELCAST_SERVERS=hazelcast:5701
-      - MONGO_CONNECTION=mongodb://192.168.8.150:27017
+      - MONGO_CONNECTION=mongodb://192.168.8.220:27017
       - MONGO_DB_NAME=tradeServer
       - MONGO_COLLECTION=marketValue
-      - HOSTNAME=blotterservice
+      - HOSTNAME=blotterservice1
       - EXTERNAL_HOST=192.168.8.144 #Refer to infrastructure machine
-      - KAFKA_URL=localhost:9092 # this will be changed
+      - GRAFANA_URL=192.168.8.220:3000 # this will be changed
     depends_on:
       #- kafka
       - hazelcast
@@ -68,40 +57,18 @@ services:
   blotterservice2:
     build: ./BlotterService
     environment:
-      - HTTP_PORT=8070
-      - TCP_PORT=8072
-      - CLIENT_CONNECTIONS_MAP=clients
-      - HAZELCAST_CLUSTER_NAME=t1_hazelcast
-      - HAZELCAST_SERVERS=hazelcast:5701
-      - MONGO_CONNECTION=mongodb://127.0.0.1:27017
-      - MONGO_DB_NAME=client-portfolios
-      - MONGO_COLLECTION=market_value
-      - HOSTNAME=blotterservice2
-      - EXTERNAL_HOST=192.168.8.144
-    depends_on:
-      # - kafka
-      - hazelcast
-    networks:
-      - trade-server-network
-    ports:
-      - 8070:8070
-    expose:
-      - 8072
-    restart: always
-
-  blotterservice3:
-    build: ./BlotterService
-    environment:
       - HTTP_PORT=8020
       - TCP_PORT=8022
       - CLIENT_CONNECTIONS_MAP=clients
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
+      #- HAZELCAST_SERVERS=hazelcast:5701,hazelcast:5702
       - HAZELCAST_SERVERS=hazelcast:5701
-      - MONGO_CONNECTION=mongodb://127.0.0.1:27017
-      - MONGO_DB_NAME=client-portfolios
-      - MONGO_COLLECTION=market_value
-      - HOSTNAME=blotterservice3
-      - EXTERNAL_HOST=192.168.8.144
+      - MONGO_CONNECTION=mongodb://192.168.8.220:27017
+      - MONGO_DB_NAME=tradeServer
+      - MONGO_COLLECTION=marketValue
+      - HOSTNAME=blotterservice2
+      - EXTERNAL_HOST=192.168.8.144 #Refer to infrastructure machine
+      - GRAFANA_URL=192.168.8.220:3000 # this will be changed
     depends_on:
       # - kafka
       - hazelcast
@@ -113,64 +80,42 @@ services:
       - 8022
     restart: always
 
-  blotterservice4:
+  blotterservice3:
     build: ./BlotterService
     environment:
-      - HTTP_PORT=8040
-      - TCP_PORT=8042
+      - HTTP_PORT=8030
+      - TCP_PORT=8032
       - CLIENT_CONNECTIONS_MAP=clients
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
+      #- HAZELCAST_SERVERS=hazelcast:5701,hazelcast:5702
       - HAZELCAST_SERVERS=hazelcast:5701
-      - MONGO_CONNECTION=mongodb://127.0.0.1:27017
-      - MONGO_DB_NAME=client-portfolios
-      - MONGO_COLLECTION=market_value
-      - HOSTNAME=blotterservice4
-      - EXTERNAL_HOST=192.168.8.144
+      - MONGO_CONNECTION=mongodb://192.168.8.220:27017
+      - MONGO_DB_NAME=tradeServer
+      - MONGO_COLLECTION=marketValue
+      - HOSTNAME=blotterservice3
+      - EXTERNAL_HOST=192.168.8.144 #Refer to infrastructure machine
+      - GRAFANA_URL=192.168.8.220:3000 # this will be changed
     depends_on:
       # - kafka
       - hazelcast
     networks:
       - trade-server-network
     ports:
-      - 8040:8040
+      - 8030:8030
     expose:
-      - 8042
+      - 8032
     restart: always
-
-  blotterservice5:
-    build: ./BlotterService
-    environment:
-      - HTTP_PORT=8050
-      - TCP_PORT=8052
-      - CLIENT_CONNECTIONS_MAP=clients
-      - HAZELCAST_CLUSTER_NAME=t1_hazelcast
-      - HAZELCAST_SERVERS=hazelcast:5701
-      - MONGO_CONNECTION=mongodb://127.0.0.1:27017
-      - MONGO_DB_NAME=client-portfolios
-      - MONGO_COLLECTION=market_value
-      - HOSTNAME=blotterservice5
-      - EXTERNAL_HOST=192.168.8.144
-    depends_on:
-      # - kafka
-      - hazelcast
-    networks:
-      - trade-server-network
-    ports:
-      - 8050:8050
-    expose:
-      - 8052
-    restart: always
-    
 
   cdrs:
     build: ./ClientDataRoutingService
-    #image: ghcr.io/s24-capstone-distributed/cdrs:latest
     depends_on:
      # - kafka
       - hazelcast
-      - blotterservice
+      - blotterservice1
+      - blotterservice2
+      - blotterservice3
     environment:
-      - BOOTSTRAP_SERVERS=kafka:9092
+      - BOOTSTRAP_SERVERS=192.168.8.220:9092
       - MARKET_VALUE_TOPIC=MarketValueTopic
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
       - HAZELCAST_INSTANCE_NAME=CDRS_1
@@ -185,11 +130,10 @@ services:
     build: ./Gateway/
     environment:
       - port=6010
-      - localUrl=localhost
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
       - HAZELCAST_SERVERS=hazelcast:5701
       - CLIENT_CONNECTIONS_MAP=clients
-      - KAFKA_URL=localhost:9092 # this will be changed
+      - GRAFANA_URL=192.168.8.220:3000 # this will be changed
     expose:
       - 6010:6010
     depends_on:
@@ -202,11 +146,10 @@ services:
     build: ./Gateway/
     environment:
       - port=6020
-      - localUrl=localhost
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
       - HAZELCAST_SERVERS=hazelcast:5701
       - CLIENT_CONNECTIONS_MAP=clients
-      - KAFKA_URL=localhost:9092 # this will be changed
+      - GRAFANA_URL=192.168.8.220:3000 # this will be changed
     depends_on:
       - hazelcast
     expose:
@@ -241,17 +184,17 @@ services:
   #     - trade-server-network
 
 
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - 8080:8080
-    environment:
-      DYNAMIC_CONFIG_ENABLED: 'true'
-    # volumes:
-    #   - .\config.yml:/etc/kafkaui/dynamic_config.yaml
-    networks:
-      - trade-server-network
+  # kafka-ui:
+  #   container_name: kafka-ui
+  #   image: provectuslabs/kafka-ui:latest
+  #   ports:
+  #     - 8080:8080
+  #   environment:
+  #     DYNAMIC_CONFIG_ENABLED: 'true'
+  #   # volumes:
+  #   #   - .\config.yml:/etc/kafkaui/dynamic_config.yaml
+  #   networks:
+  #     - trade-server-network
   
 networks:
   trade-server-network:
