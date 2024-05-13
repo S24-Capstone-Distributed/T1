@@ -38,7 +38,6 @@ services:
     networks:
       - trade-server-network
     
-  
   blotterservice:
     build: ./BlotterService
     #image: ghcr.io/s24-capstone-distributed/blotterservice:latest
@@ -65,6 +64,103 @@ services:
     expose:
       - 8012:8012
     restart: always
+
+  blotterservice2:
+    build: ./BlotterService
+    environment:
+      - HTTP_PORT=8070
+      - TCP_PORT=8072
+      - CLIENT_CONNECTIONS_MAP=clients
+      - HAZELCAST_CLUSTER_NAME=t1_hazelcast
+      - HAZELCAST_SERVERS=hazelcast:5701
+      - MONGO_CONNECTION=mongodb://127.0.0.1:27017
+      - MONGO_DB_NAME=client-portfolios
+      - MONGO_COLLECTION=market_value
+      - HOSTNAME=blotterservice2
+      - EXTERNAL_HOST=localhost
+    depends_on:
+      # - kafka
+      - hazelcast
+    networks:
+      - trade-server-network
+    ports:
+      - 8070:8070
+    expose:
+      - 8072
+    restart: always
+
+  blotterservice3:
+    build: ./BlotterService
+    environment:
+      - HTTP_PORT=8020
+      - TCP_PORT=8022
+      - CLIENT_CONNECTIONS_MAP=clients
+      - HAZELCAST_CLUSTER_NAME=t1_hazelcast
+      - HAZELCAST_SERVERS=hazelcast:5701
+      - MONGO_CONNECTION=mongodb://127.0.0.1:27017
+      - MONGO_DB_NAME=client-portfolios
+      - MONGO_COLLECTION=market_value
+      - HOSTNAME=blotterservice3
+      - EXTERNAL_HOST=localhost
+    depends_on:
+      # - kafka
+      - hazelcast
+    networks:
+      - trade-server-network
+    ports:
+      - 8020:8020
+    expose:
+      - 8022
+    restart: always
+
+  blotterservice4:
+    build: ./BlotterService
+    environment:
+      - HTTP_PORT=8040
+      - TCP_PORT=8042
+      - CLIENT_CONNECTIONS_MAP=clients
+      - HAZELCAST_CLUSTER_NAME=t1_hazelcast
+      - HAZELCAST_SERVERS=hazelcast:5701
+      - MONGO_CONNECTION=mongodb://127.0.0.1:27017
+      - MONGO_DB_NAME=client-portfolios
+      - MONGO_COLLECTION=market_value
+      - HOSTNAME=blotterservice4
+      - EXTERNAL_HOST=localhost
+    depends_on:
+      # - kafka
+      - hazelcast
+    networks:
+      - trade-server-network
+    ports:
+      - 8040:8040
+    expose:
+      - 8042
+    restart: always
+
+  blotterservice5:
+    build: ./BlotterService
+    environment:
+      - HTTP_PORT=8050
+      - TCP_PORT=8052
+      - CLIENT_CONNECTIONS_MAP=clients
+      - HAZELCAST_CLUSTER_NAME=t1_hazelcast
+      - HAZELCAST_SERVERS=hazelcast:5701
+      - MONGO_CONNECTION=mongodb://127.0.0.1:27017
+      - MONGO_DB_NAME=client-portfolios
+      - MONGO_COLLECTION=market_value
+      - HOSTNAME=blotterservice5
+      - EXTERNAL_HOST=localhost
+    depends_on:
+      # - kafka
+      - hazelcast
+    networks:
+      - trade-server-network
+    ports:
+      - 8050:8050
+    expose:
+      - 8052
+    restart: always
+    
 
   cdrs:
     build: ./ClientDataRoutingService

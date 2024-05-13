@@ -172,6 +172,7 @@ async function connectToHazelCast() {
       clusterMembers: process.env.HAZELCAST_SERVERS.split(',')
     }
   });
+  console.log(`Blotter Service connected to hazelcast ${clientUrl}`)
   clientMap = await hz.getMap(process.env.CLIENT_CONNECTIONS_MAP);
 }
 
