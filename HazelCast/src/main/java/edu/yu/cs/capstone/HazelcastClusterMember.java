@@ -6,7 +6,7 @@ import com.hazelcast.config.ListenerConfig;
 import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.core.Hazelcast;
 
-public class ClientServerMap {
+public class HazelcastClusterMember {
     public static void main(String[] args)
     {
         NearCacheConfig nearCacheConfig = new NearCacheConfig()
@@ -15,8 +15,6 @@ public class ClientServerMap {
     
         Config config = new Config();
         config.setClusterName(System.getenv("HAZELCAST_CLUSTER_NAME"))
-            //?Probably not necessary
-            .setInstanceName("instance1")
             .getMapConfig("clients")
             .setNearCacheConfig(nearCacheConfig);
         config.addListenerConfig(new ListenerConfig(new BlotterServiceListener()));

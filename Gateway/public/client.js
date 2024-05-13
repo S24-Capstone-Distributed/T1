@@ -52,10 +52,10 @@ function openBlotter(url, clientId) {
     const row = JSON.parse(event.data);
     const prevPriceUpdate = priceUpdateMap.get(row.ticker);
     const prevHoldingUpdate = holdingUpdateMap.get(row.ticker);
-    if(!prevPriceUpdate || prevPriceUpdate < row.priceLastUpdated || prevHoldingUpdate < row.holdingLastUpdated){
+    if(!prevPriceUpdate || prevPriceUpdate < row.price_last_updated || prevHoldingUpdate < row.holding_last_updated){
       updateStockTable(row);
-      priceUpdateMap.set(row.ticker, row.priceLastUpdated);
-      holdingUpdateMap.set(row.ticker, row.holdingLastUpdated);
+      priceUpdateMap.set(row.ticker, row.price_last_updated);
+      holdingUpdateMap.set(row.ticker, row.holding_last_updated);
     }
   };
 

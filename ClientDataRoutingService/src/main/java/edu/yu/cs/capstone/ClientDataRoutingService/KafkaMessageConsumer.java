@@ -2,6 +2,7 @@ package edu.yu.cs.capstone.ClientDataRoutingService;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Arrays;
 import java.util.Properties;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -35,17 +36,9 @@ public class KafkaMessageConsumer {
     private static Logger logger = LogManager.getLogger(KafkaMessageConsumer.class);
 
     public KafkaMessageConsumer(){
-        Properties props = new Properties();
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("BOOTSTRAP_SERVERS"));
-        System.out.println(System.getenv("BOOTSTRAP_SERVERS"));
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "market_value_consumers");
-        //TODO change?
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        this.consumer = new KafkaConsumer<>(props);
-        this.pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() + 1);  
-        connectToHazelCast();      
+        connectToKafka();
+        connectToHazelCast();
+        this.pool = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() + 1);       
     }
 
     public void start(){
@@ -113,16 +106,27 @@ public class KafkaMessageConsumer {
         }
     }
 
+    private void connectToKafka(){
+        Properties props = new Properties();
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("BOOTSTRAP_SERVERS"));
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "market_value_consumers");
+        //TODO change?
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        this.consumer = new KafkaConsumer<>(props);
+    }
+
     /**
      * Establish connection to Hazelcast
      */
     private void connectToHazelCast(){
-        ClientConfig config = new ClientConfig();
-        config.setClusterName(System.getenv("HAZELCAST_CLUSTER_NAME"));
         String[] servers = System.getenv("HAZELCAST_SERVERS").split(",");
-        for(String server : servers){
-            config.getNetworkConfig().addAddress(server);
-        }
+        ClientConfig config = new ClientConfig();
+        config.setClusterName(System.getenv("HAZELCAST_CLUSTER_NAME"))
+            .setInstanceName(System.getenv("HAZELCAST_INSTANCE_NAME"))
+            .getNetworkConfig()
+            .setAddresses(Arrays.asList(servers));
         this.hazelcastClient = HazelcastClient.newHazelcastClient(config);
         this.clientConnections = hazelcastClient.getMap(System.getenv("CLIENT_CONNECTIONS_MAP"));
     }

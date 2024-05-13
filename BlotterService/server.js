@@ -118,19 +118,19 @@ app.get("/blotter/:clientId", (req, res) => {
   };
   eventEmitter.on(clientId, eventListener);
   connectedClients++;
-  retrievePortfolioFromMongo(clientId).then((portfolio) => {
-    portfolio.forEach((row) => {
-      lock.acquire(row.clientId + row.ticker, () => {
-        if (!sentTickersSet.has(row.clientId + row.ticker)) {
-          sendEvent(res, row);
-        }
-      });
-    });
-    processedHistoricalData = true;
-    console.info("Completed portfolio retrieval");
-  }).catch(error => {
-    console.error("Portfolio retrieval from Mongo failed: ", error);
-  });
+  // retrievePortfolioFromMongo(clientId).then((portfolio) => {
+  //   portfolio.forEach((row) => {
+  //     lock.acquire(row.clientId + row.ticker, () => {
+  //       if (!sentTickersSet.has(row.clientId + row.ticker)) {
+  //         sendEvent(res, row);
+  //       }
+  //     });
+  //   });
+  //   processedHistoricalData = true;
+  //   console.info("Completed portfolio retrieval");
+  // }).catch(error => {
+  //   console.error("Portfolio retrieval from Mongo failed: ", error);
+  // });
   
   req.on("close", () => {
     console.info("Connection to client closed");
@@ -146,23 +146,23 @@ app.listen(HTTP_PORT, () => {
 });
 
 
-// function connectToMongoCollection() {
-//   const client = new MongoClient(process.env.MONGO_CONNECTION);
-//   client.connect();
-//   const db = client.db(process.env.MONGO_DB_NAME);
-//   console.log("Connected to Mongo!");
-//   return db.collection(process.env.MONGO_COLLECTION);
-// }
+function connectToMongoCollection() {
+  const client = new MongoClient(process.env.MONGO_CONNECTION);
+  client.connect();
+  const db = client.db(process.env.MONGO_DB_NAME);
+  console.log("Connected to Mongo!");
+  return db.collection(process.env.MONGO_COLLECTION);
+}
 
-// async function retrievePortfolioFromMongo(clientId) {
-//   const query = { clientId: clientId };
-//   const options = {
-//     projection: { _id: 0, clientId: 1, ticker: 1, quantity: 1, price: 1, market_value: 1, price_last_updated: 1, holding_last_updated: 1 },
-//   };
-//   const portfolio = await portfolios.find(query, options).toArray();
-//   console.log(`Retrieved ${portfolio}`);
-//   return portfolio;
-// }
+async function retrievePortfolioFromMongo(clientId) {
+  const query = { clientId: clientId };
+  const options = {
+    projection: { _id: 0, clientId: 1, ticker: 1, quantity: 1, price: 1, market_value: 1, price_last_updated: 1, holding_last_updated: 1 },
+  };
+  const portfolio = await portfolios.find(query, options).toArray();
+  console.log(`Retrieved ${portfolio}`);
+  return portfolio;
+}
 
 async function connectToHazelCast() {
   const hz = await Client.newHazelcastClient({

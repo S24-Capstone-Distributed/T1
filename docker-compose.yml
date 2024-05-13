@@ -170,9 +170,10 @@ services:
       - hazelcast
       - blotterservice
     environment:
-      - BOOTSTRAP_SERVERS=192.168.8.150:9092
+      - BOOTSTRAP_SERVERS=kafka:9092
       - MARKET_VALUE_TOPIC=MarketValueTopic
       - HAZELCAST_CLUSTER_NAME=t1_hazelcast
+      - HAZELCAST_INSTANCE_NAME=CDRS_1
       #- HAZELCAST_SERVERS=127.0.0.1:5701,127.0.0.1:5702
       #- HAZELCAST_SERVERS=hazelcast:5701,hazelcast:5702
       - HAZELCAST_SERVERS=hazelcast:5701

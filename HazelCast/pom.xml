@@ -46,7 +46,7 @@
                   <appendAssemblyId>false</appendAssemblyId>
                   <archive>
                     <manifest>
-                      <mainClass>edu.yu.cs.capstone.ClientServerMap</mainClass>
+                      <mainClass>edu.yu.cs.capstone.HazelcastClusterMember</mainClass>
                     </manifest>
                   </archive>
                   <descriptorRefs>
