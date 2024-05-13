@@ -1,5 +1,5 @@
-//import { Kafka } from "kafkajs";
-//import EventManager from './EventManager.js';
+const { Kafka } = require("kafkajs");
+import EventManager from './EventManager.js';
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -27,7 +27,6 @@ const TCP_PORT = parseInt(process.env.TCP_PORT);
 const clientUrl = `${EXTERNAL_HOST}:${HTTP_PORT}`;
 const hazelcastValue = `${clientUrl}|${HOSTNAME}:${TCP_PORT}`;
 //const portfolios = connectToMongoCollection();
-
 //Metrics setup
 // const POOL_ID = "BLOTTER";
 // const kafka = new Kafka({
