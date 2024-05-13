@@ -9,10 +9,14 @@ const app = express();
 
 const localUrl = process.env.localUrl;
 const PORT = parseInt(process.env.port);
+let clientMap;
+
 //TODO REMOVE
 const servers = [`${localUrl}:8010`]; //, `http://${localUrl}:8020`, `http://${localUrl}:8030`];
 let currentServerIndex = -1;
 
+
+//Observability setup
 const POOL_ID = "GATEWAY";
 const kafka = new Kafka({
   clientId: POOL_ID,
@@ -22,13 +26,12 @@ const producer = kafka.producer();
 await producer.connect();
 const observability = new EventManager(producer, PORT);
 const GATEWAY_CONNECTIONS_ID = 617;
+const RECONNECTED_CLIENTS_ID = 618;
 setInterval(() => {
   observability.send1SecondCPUUsage(POOL_ID);
   observability.sendMemoryUsage(POOL_ID);
 }, 1000);
 
-
-let clientMap;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({
@@ -52,7 +55,7 @@ app.post('/portfolio.html', async(req, res) => {
 
 app.post('/reconnect', async(req, res) => {
     const clientId = req.body;
-    console.log(`Reconnect request from client ${clientId}`);
+    observability.sendEvent(POOL_ID, RECONNECTED_CLIENTS_ID, clientId, 1);
     retrieveBlotterServer(clientId, res);
 });
 

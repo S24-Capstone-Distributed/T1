@@ -72,7 +72,9 @@ public class KafkaMessageConsumer {
             this.hazelcastClient.shutdown();
         }
     }
-    //Sends the provided message over TCP
+    /**
+     * Sends the provided message over TCP
+     */
     private void send(String clientId, DataMessage m){       
         try {
             String blotterServiceUrl = this.clientConnections.get(clientId);
@@ -93,6 +95,12 @@ public class KafkaMessageConsumer {
         }
     }
 
+    /**
+     * 
+     * @param blotterUrl
+     * - format: external_hostname:http_port|internal_hostname:tcp_port
+     * @return TCP socket address
+     */
     private SocketAddress parseAddress(String blotterUrl){
         String[] hazelcastPieces = blotterUrl.split("\\|");
         String[] urlPieces = hazelcastPieces[1].split(":");
@@ -105,6 +113,9 @@ public class KafkaMessageConsumer {
         }
     }
 
+    /**
+     * Establish connection to Hazelcast
+     */
     private void connectToHazelCast(){
         ClientConfig config = new ClientConfig();
         config.setClusterName(System.getenv("HAZELCAST_CLUSTER_NAME"));

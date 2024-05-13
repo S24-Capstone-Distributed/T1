@@ -14,9 +14,6 @@ const lock = new AsyncLock();
 const app = express();
 const eventEmitter = new EventEmitter();
 
-let processedCDRSMessages = 0;
-let rowsSentToClients = 0;
-
 let clientMap;
 
 app.use(cors());
@@ -28,11 +25,10 @@ const EXTERNAL_HOST = process.env.EXTERNAL_HOST;
 const HTTP_PORT = parseInt(process.env.HTTP_PORT);
 const TCP_PORT = parseInt(process.env.TCP_PORT);
 const clientUrl = `${EXTERNAL_HOST}:${HTTP_PORT}`;
-const hazelcastValue = `${clientUrl}|${HOSTNAME}:${TCP_PORT}`
-const priceUpdateMap = new Map();
-const holdingUpdateMap = new Map();
+const hazelcastValue = `${clientUrl}|${HOSTNAME}:${TCP_PORT}`;
 const portfolios = connectToMongoCollection();
 
+//Metrics setup
 const POOL_ID = "BLOTTER";
 const kafka = new Kafka({
   clientId: POOL_ID,
@@ -42,10 +38,21 @@ const producer = kafka.producer();
 await producer.connect();
 const observability = new EventManager(producer, HTTP_PORT);
 const SSE_COUNT_ID = 847;
+const CONNECTED_CLIENTS_ID = 848;
+const MESSAGE_THROUHGPUT_ID = 849;
+let connectedClients = 0;
+let messageThroughput = 0;
+//Per second
 setInterval(() => {
   observability.send1SecondCPUUsage(POOL_ID);
   observability.sendMemoryUsage(POOL_ID);
 }, 1000);
+//Per minute
+setInterval(() => {
+  observability.sendEvent(POOL_ID, CONNECTED_CLIENTS_ID, "connected_users_per_minute", connectedClients);
+  observability.sendEvent(POOL_ID, MESSAGE_THROUHGPUT_ID, "CDRS_messages_per_minute", messageThroughput);
+  messageThroughput = 0;
+}, 60000);
 
 // Configure a TCP server to listen for CDRS connections
 const tcpServer = net.createServer({ keepAlive: true }, (socket) => {
@@ -60,7 +67,7 @@ const tcpServer = net.createServer({ keepAlive: true }, (socket) => {
     try {
       console.debug("Blotterservice data: " + JSON.stringify(data));
       handleEvent(data);
-      processedCDRSMessages++;
+      messageThroughput++;
     } catch (error) {
       console.error("Failed to parse DataMessage from JSON:", error);
     }
@@ -108,10 +115,9 @@ app.get("/blotter/:clientId", (req, res) => {
     } else {
       sendEvent(res, data);
     }
-    rowsSentToClients++;
   };
   eventEmitter.on(clientId, eventListener);
-
+  connectedClients++;
   retrievePortfolioFromMongo(clientId).then((portfolio) => {
     portfolio.forEach((row) => {
       lock.acquire(row.clientId + row.ticker, () => {
@@ -128,8 +134,7 @@ app.get("/blotter/:clientId", (req, res) => {
   
   req.on("close", () => {
     console.info("Connection to client closed");
-    console.log(`CDRS Messages received: ${processedCDRSMessages}`);
-    console.log(`Rows sent to clients: ${rowsSentToClients}`);
+    connectedClients--;
     eventEmitter.removeListener(clientId, eventListener);
     res.end();
   });
@@ -171,15 +176,8 @@ async function connectToHazelCast() {
 }
 
 async function handleEvent(data) {
-  const key = data.clientId + data.ticker;
-  const prevPriceUpdate = priceUpdateMap.get(key);
-  const prevHoldingUpdate = holdingUpdateMap.get(key);
-  if(!prevPriceUpdate || prevPriceUpdate > data.priceLastUpdated || prevHoldingUpdate > data.holdingLastUpdated){
-    eventEmitter.emit(data.clientId, data);
-    observability.sendEvent(POOL_ID, SSE_COUNT_ID, data.clientId, 1);
-    priceUpdateMap.set(key, data.priceLastUpdated);
-    holdingUpdateMap.set(key, data.holdingLastUpdated);
-  }
+  eventEmitter.emit(data.clientId, data);
+  observability.sendEvent(POOL_ID, SSE_COUNT_ID, data.clientId, 1);
 }
 
 async function sendEvent(res, dataMessageObj) {

@@ -1,3 +1,4 @@
+//Hardcoded HAProxy url
 const haProxyUrl = 'http://localhost:80';
 const priceUpdateMap = new Map();
 const holdingUpdateMap = new Map();
@@ -9,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const clientId = document.getElementById("clientId").value;
+    //Retrieve blotter url from Gateway (via HAProxy)
     fetch('/portfolio.html', {
       method: 'POST',
       body: clientId
@@ -25,18 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   });
 });
-
-//document.addEventListener("submit", )
-
-// document.addEventListener("DOMContentLoaded", () => {
-//   const clientId = new URLSearchParams(window.location.search).get("clientId");
-//   console.log(`ClientId: ${clientId}`);
-//   if (clientId != null) {
-//     const table = document.getElementById("stock-data");
-//     table.innerHTML = "";
-//     connectToBlotter(clientId);
-//   }
-//});
 
 function reconnectToBlotter(clientId){
   //Fetch new blotterUrl from HA Proxy
@@ -55,24 +45,6 @@ function reconnectToBlotter(clientId){
   })
 
 }
-
-//Retrieves blotter service node address and then opens blotter
-// function connectToBlotter(clientId){
-//   fetch(`http://localhost:8000/${clientId}`) // TODO - this will be a request to HA Proxy (!!)
-//     .then(response => {
-//       if (!response.ok) {
-//         throw new Error(`HTTP error!\n${response.text}`);
-//       }
-//       return response.json();
-//     })
-//     .then(blotterUrl => {
-
-//       openBlotter(blotterUrl, clientId);
-//     })
-//     .catch(error => {
-//       console.error('Error:', error.message);
-//     });
-//}
 
 function openBlotter(url, clientId) {
   const eventSource = new EventSource(`http://${url}/blotter/${clientId}`);
