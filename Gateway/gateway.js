@@ -1,4 +1,4 @@
-//import { Kafka } from "kafkajs";
+const { Kafka } = require("kafkajs");
 //import EventManager from './EventManager.js';
 const express = require('express');
 const { Client } = require('hazelcast-client');

@@ -26,6 +26,7 @@ const HTTP_PORT = parseInt(process.env.HTTP_PORT);
 const TCP_PORT = parseInt(process.env.TCP_PORT);
 const clientUrl = `${EXTERNAL_HOST}:${HTTP_PORT}`;
 const hazelcastValue = `${clientUrl}|${HOSTNAME}:${TCP_PORT}`;
+
 //const portfolios = connectToMongoCollection();
 //Metrics setup
 // const POOL_ID = "BLOTTER";
