@@ -1,5 +1,5 @@
 const { Kafka } = require("kafkajs");
-import EventManager from './EventManager.js';
+//import EventManager from './EventManager.js';
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");

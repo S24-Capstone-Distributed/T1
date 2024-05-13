@@ -1,5 +1,5 @@
 //Hardcoded HAProxy url
-const haProxyUrl = 'http://localhost:80';
+const haProxyUrl = 'http://localhost:192.168.144';
 const priceUpdateMap = new Map();
 const holdingUpdateMap = new Map();
 document.addEventListener("DOMContentLoaded", () => {
