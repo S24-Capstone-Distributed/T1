@@ -41,6 +41,7 @@ function reconnectToBlotter(clientId){
     }
   })
   .then(blotterUrl =>{
+    console.log(`Reconnecting to ${blotterUrl}`)
     openBlotter(blotterUrl, clientId);
   })
 
