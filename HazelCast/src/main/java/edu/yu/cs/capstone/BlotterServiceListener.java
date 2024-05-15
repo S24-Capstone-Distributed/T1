@@ -20,7 +20,7 @@ public class BlotterServiceListener implements ClientListener
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.setClusterName(System.getenv("HAZELCAST_CLUSTER_NAME")); 
         this.hzClient = HazelcastClient.newHazelcastClient(clientConfig);
-        this.serverSet = hzClient.getSet( "availableServers" );
+        this.serverSet = hzClient.getSet(System.getenv("AVAILABLE_SERVERS"));
         logger.info("BlotterService Listener Created");
     }
 

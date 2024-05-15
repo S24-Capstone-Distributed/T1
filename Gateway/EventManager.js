@@ -9,6 +9,10 @@ export default class EventManager {
     }
 
     async sendEvent(poolid, eventid, eventkey, eventvalue) {
+        if(!eventkey){
+            console.log(`null eventkey for ${eventid}`);
+            return;
+        }
         try {
             const fullMsg = {
                 schema: {
@@ -54,7 +58,7 @@ export default class EventManager {
                 // key: poolid,
                 value: JSON.stringify(fullMsg),
             };
-            console.log("SENDING", msg)
+            //console.log("SENDING", msg)
             await this.producer.send({
                 topic: process.env.OBSERVABILITY_EVENTS_TOPIC,
                 messages: [

@@ -116,6 +116,8 @@ public class KafkaMessageConsumer {
         //TODO change?
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         this.consumer = new KafkaConsumer<>(props);
+        System.out.println("Connected to Kafka");
+        logger.info("Connected to Kafka");
     }
 
     /**
@@ -138,9 +140,9 @@ public class KafkaMessageConsumer {
         private final int quantity;
         private final double price;
         private final double market_value;
-        private final long price_last_updated;
-        private final long holding_last_updated;
-        public DataMessage(String ticker, int quantity, double price, double market_value, long price_last_updated, long holding_last_updated){
+        private final double price_last_updated;
+        private final double holding_last_updated;
+        public DataMessage(String ticker, int quantity, double price, double market_value, double price_last_updated, double holding_last_updated){
             this.ticker = ticker;
             this.quantity = quantity;
             this.price = price;

@@ -1,9 +1,9 @@
 import EventManager from './EventManager.js';
-import  { Kafka } from "kafkajs"
-import  express from 'express'
-import  { Client } from 'hazelcast-client'
-import  cors from 'cors'
-import  bodyParser from 'body-parser'
+import  { Kafka } from "kafkajs";
+import  express from 'express';
+import  { Client } from 'hazelcast-client';
+import  cors from 'cors';
+import  bodyParser from 'body-parser';
 const  app = express();
 const PORT = parseInt(process.env.port);
 let blotterServers;
@@ -16,23 +16,26 @@ let currentServerIndex = -1;
 const POOL_ID = "GATEWAY";
 const kafka = new Kafka({
   clientId: POOL_ID,
-  brokers: [process.env.GRAFANA_URL],
+  brokers: [process.env.KAFKA_URL],
 });
-const producer = kafka.producer();
-await producer.connect();
-const observability = new EventManager(producer, PORT);
 const GATEWAY_CONNECTIONS_ID = 617;
 const RECONNECTED_CLIENTS_ID = 618;
-setInterval(() => {
-  observability.send1SecondCPUUsage(POOL_ID);
-  observability.sendMemoryUsage(POOL_ID);
-}, 1000);
+if(process.env.RUN_METRICS == "true"){
+    const producer = kafka.producer();
+    await producer.connect();
+    const observability = new EventManager(producer, PORT);
+    setInterval(() => {
+        observability.send1SecondCPUUsage(POOL_ID);
+        observability.sendMemoryUsage(POOL_ID);
+    }, 1000);
+}
 
 
 app.use(cors());
-app.use(bodyParser.urlencoded({
-    extended: false 
-}))
+// app.use(bodyParser.urlencoded({
+//     extended: false 
+// }))
+app.use(express.text());
 
 // Serve static content from "public" directory
 app.use(express.static("public"));
@@ -45,13 +48,15 @@ connectToHazelCast().catch(err => {
 
 app.post('/portfolio.html', async(req, res) => {
     const clientId = req.body;
-    observability.sendEvent(POOL_ID, GATEWAY_CONNECTIONS_ID, clientId, 1);
+    console.log(`req.body: ${JSON.stringify(clientId)}`);
+    //observability.sendEvent(POOL_ID, Math.floor(Math.random() * 10000000000), GATEWAY_CONNECTIONS_ID, clientId);
+    console.log(`Client ${clientId} connected to gateway`);
     retrieveBlotterServer(clientId, res);
 })
 
 app.post('/reconnect', async(req, res) => {
     const clientId = req.body;
-    observability.sendEvent(POOL_ID, RECONNECTED_CLIENTS_ID, clientId, 1);
+    //observability.sendEvent(POOL_ID, Math.floor(Math.random() * 10000000000), RECONNECTED_CLIENTS_ID, clientId);
     console.log('RECONNECT CALLED')
     retrieveBlotterServer(clientId, res);
 });
@@ -78,7 +83,7 @@ async function connectToHazelCast() {
         instanceName: `Gateway:${PORT}`
     });
     clientMap = await hz.getMap(process.env.CLIENT_CONNECTIONS_MAP);
-    blotterServers = await hz.getSet("availableServers");
+    blotterServers = await hz.getSet(process.env.AVAILABLE_SERVERS);
     await blotterServers.addItemListener(itemListener, true)
     const items = await blotterServers.toArray();
     servers.push(...items);
@@ -97,8 +102,11 @@ async function retrieveBlotterServer(clientId, res){
     }
     else
     {
-        urlPieces = server.split('|');
+        const urlPieces = server.split('|');
         server = urlPieces[0];
+        if(!(await blotterServers.contains(server))){
+            server = getNextServer();
+        }
     }
     console.log(`Sending ${server} to ${clientId}`);
     res.json(server);
@@ -117,8 +125,8 @@ function getNextServer()
 }
 
 var myQueue = [];
-
-    const itemListener =
+let index;
+const itemListener =
     {
         itemAdded: (itemEvent) =>
         {

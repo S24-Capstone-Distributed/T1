@@ -61,7 +61,7 @@ function openBlotter(url, clientId) {
 
   // Error handling for SSE connection
   eventSource.onerror = () => {
-    console.error(`SSE connection to ${blotterUrl} closed for client ${clientId}. Attempting reconnect.`);
+    console.error(`SSE connection to ${url} closed for client ${clientId}. Attempting reconnect.`);
     eventSource.close();
     reconnectToBlotter(clientId);
   };
@@ -75,10 +75,14 @@ function updateStockTable(data) {
     }
     return;
   }
+  const now = Date.now();
+  const latency = Math.max(data.price_last_updated, data.holding_last_updated);
   if (rowToUpdate) {
     rowToUpdate.cells[1].textContent = data.quantity;
     rowToUpdate.cells[2].textContent = data.price;
     rowToUpdate.cells[3].textContent = data.market_value;
+    rowToUpdate.cells[4].textContent = now - latency;
+    console.log(`Latency: ${now} - ${latency}`);
   } else {
     // If the row doesn't exist, create a new row
     const table = document.getElementById("stock-data");
@@ -86,7 +90,7 @@ function updateStockTable(data) {
     newRow.id = data.ticker;
 
     // Add cells for stock, quantity, price, and market value
-    newRow.innerHTML = `<td>${data.ticker}</td><td>${data.quantity}</td><td>${data.price}</td><td>${data.market_value}</td>`;
+    newRow.innerHTML = `<td>${data.ticker}</td><td>${data.quantity}</td><td>${data.price}</td><td>${data.market_value}</td><td>${Date.now() - latency}</td>`;
     table.appendChild(newRow);
   }
 }
